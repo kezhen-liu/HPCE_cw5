@@ -194,12 +194,65 @@ namespace puzzler
     }
 
 
-    virtual void Execute(
+    /* virtual void Execute(
 			 ILog *log,
 			 const IsingSpinInput *input,
 			 IsingSpinOutput *output
-			 ) const =0;
-
+			 ) const =0; */
+	void Execute(
+			 ILog *log,
+			 const IsingSpinInput *input,
+			 IsingSpinOutput *output
+			 ) const
+	{
+      int n=pInput->n;
+      
+      std::vector<int> current(n*n), next(n*n);
+      
+      std::vector<double> sums(pInput->maxTime, 0.0);
+      std::vector<double> sumSquares(pInput->maxTime, 0.0);
+      
+      log->LogInfo("Starting steps.");
+      
+      std::mt19937 rng(pInput->seed); // Gives the same sequence on all platforms
+      uint32_t seed;
+      for(unsigned i=0; i<pInput->repeats; i++){
+        seed=rng();
+        
+        log->LogVerbose("  Repeat %u", i);
+        
+        init(pInput, seed, &current[0]);
+        
+        for(unsigned t=0; t<pInput->maxTime; t++){
+          log->LogDebug("    Step %u", t);
+          
+          // Dump the state of spins on high log levels
+          dump(Log_Debug, pInput, &current[0], log);
+          
+          step(pInput, seed, &current[0], &next[0]);
+          std::swap(current, next);
+          
+          // Track the statistics
+          double countPositive=count(pInput, &current[0]);
+          sums[t] += countPositive;
+          sumSquares[t] += countPositive*countPositive;
+        }
+        
+        seed=lcg(seed);
+      }
+      
+      log->LogInfo("Calculating final statistics");
+      
+      pOutput->means.resize(pInput->maxTime);
+      pOutput->stddevs.resize(pInput->maxTime);
+      for(unsigned i=0; i<pInput->maxTime; i++){
+        pOutput->means[i] = sums[i] / pInput->maxTime;
+        pOutput->stddevs[i] = sqrt( sumSquares[i]/pInput->maxTime - pOutput->means[i]*pOutput->means[i] );
+        log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, pOutput->means[i], pOutput->stddevs[i]);
+      }
+      
+      log->LogInfo("Finished");
+    }
 
     void ReferenceExecute(
 			  ILog *log,

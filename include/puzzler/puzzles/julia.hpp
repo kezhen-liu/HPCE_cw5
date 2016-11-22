@@ -119,12 +119,51 @@ namespace puzzler
     }
 
   protected:
-    virtual void Execute(
+    /*virtual void Execute(
 			 ILog *log,
 			 const JuliaInput *input,
 			 JuliaOutput *output
 			 ) const =0;
-
+	*/
+	void Execute(
+			 ILog *log,
+			 const JuliaInput *input,
+			 JuliaOutput *output
+			 ) const
+	{
+      std::vector<unsigned> dest(pInput->width*pInput->height);
+      
+      log->LogInfo("Starting");
+      
+      juliaFrameRender_Reference(
+          pInput->width,     //! Number of pixels across
+          pInput->height,    //! Number of rows of pixels
+          pInput->c,        //! Constant to use in z=z^2+c calculation
+          pInput->maxIter,   //! When to give up on a pixel
+          &dest[0]     //! Array of width*height pixels, with pixel (x,y) at pDest[width*y+x]
+      );
+      
+      log->LogInfo("Mapping");
+      
+      log->Log(Log_Debug, [&](std::ostream &dst){
+        dst<<"\n";
+        for(unsigned y=0;y<pInput->height;y++){
+          for(unsigned x=0;x<pInput->width;x++){
+            unsigned got=dest[y*pInput->width+x];
+            dst<<(got%9);
+          }
+          dst<<"\n";
+        }
+      });
+      log->LogVerbose("  c = %f,%f,  arg=%f\n", pInput->c.real(), pInput->c.imag(), std::arg(pInput->c));
+      
+      pOutput->pixels.resize(dest.size());
+      for(unsigned i=0; i<dest.size(); i++){
+        pOutput->pixels[i] = (dest[i]==pInput->maxIter) ? 0 : (1+(dest[i]%256));
+      }
+      
+      log->LogInfo("Finished");
+    }
 
     void ReferenceExecute(
 			  ILog *log,
