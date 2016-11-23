@@ -15,7 +15,7 @@ __kernel void kernel_xy(const float dx, const float dy, const unsigned maxIter, 
 	unsigned iter=0;
 	while(iter<maxIter){
 		//if(abs(z) > 2){
-		if(z_x*z_x + z_y*z_y > 4)
+		if(hypot(z_x, z_y) > 2)
 			break;
 		}
 		// Anybody want to refine/tighten this?
