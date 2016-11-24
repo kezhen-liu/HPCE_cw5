@@ -18,7 +18,7 @@ public:
 		       ) const override {
 				   //memory intensive, going to use tbb
 	// Take a copy, as we'll need to modify the "count" flags
-      std::vector<puzzler::dd_node_t> nodes(pInput->nodes);
+      std::vector<puzzler::dd_node_t> nodes(input->nodes);
       
       log->Log(Log_Debug, [&](std::ostream &dst){
         dst<<"  Scale = "<<nodes.size()<<"\n";
@@ -39,15 +39,15 @@ public:
 	  std::vector<tbb::atomic<uint32_t> > nodeCount(nodes.size(), 0);
 	  
       // This gives the same sequence on all platforms
-      std::mt19937 rng(pInput->seed);
-	  unsigned seed[pInput->numSamples], start[pInput->numSamples];
-	  unsigned length=pInput->lengthWalks;           // All paths the same length
+      std::mt19937 rng(input->seed);
+	  unsigned seed[input->numSamples], start[input->numSamples];
+	  unsigned length=input->lengthWalks;           // All paths the same length
 	  
-      for(unsigned i=0; i<pInput->numSamples; i++){
+      for(unsigned i=0; i<input->numSamples; i++){
         unsigned seed[i]=rng();
         unsigned start[i]=rng() % nodes.size();    // Choose a random node
       }
-	  tbb::parallel_for(0ul,pInput->numSamples,[&](size_t i){
+	  tbb::parallel_for(0ul,input->numSamples,[&](size_t i){
         //random_walk(nodes, seed[i], start[i], length);
 		/*	Unroll and rewrite random_walk() */
 		uint32_t rng=seed[i];
@@ -66,19 +66,19 @@ public:
       log->LogVerbose("Done random walks, converting histogram");
 
       // Map the counts from the nodes back into an array
-      pOutput->histogram.resize(nodes.size());
+      output->histogram.resize(nodes.size());
       for(unsigned i=0; i<nodes.size(); i++){
-        pOutput->histogram[i]=std::make_pair(uint32_t(nodeCount[i]),uint32_t(i));
+        output->histogram[i]=std::make_pair(uint32_t(nodeCount[i]),uint32_t(i));
         //nodes[i].count=0;
       }
       // Order them by how often they were visited
-      std::sort(pOutput->histogram.rbegin(), pOutput->histogram.rend());
+      std::sort(output->histogram.rbegin(), output->histogram.rend());
       
 
       // Debug only. No cost in normal execution
       log->Log(Log_Debug, [&](std::ostream &dst){
-        for(unsigned i=0; i<pOutput->histogram.size(); i++){
-          dst<<"  "<<i<<" : "<<pOutput->histogram[i].first<<", "<<pOutput->histogram[i].second<<"\n";
+        for(unsigned i=0; i<output->histogram.size(); i++){
+          dst<<"  "<<i<<" : "<<output->histogram[i].first<<", "<<output->histogram[i].second<<"\n";
         }
       });
 
