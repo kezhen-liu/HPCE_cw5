@@ -60,7 +60,7 @@ public:
         
           current=nodes[current].edges[edgeIndex];
         }
-	  }
+	  });
 
 	  /************************************** Random Walk Implementation Ends	*************************/
       //log->LogVerbose("Done random walks, converting histogram");
