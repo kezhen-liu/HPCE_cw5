@@ -47,7 +47,7 @@ public:
         seed[i]=rng();
         start[i]=rng() % nodes.size();    // Choose a random node
       }
-	  tbb::parallel_for(0ul,input->numSamples,[&](size_t i){
+	  tbb::parallel_for(0ul,(unsigned)input->numSamples,[&](size_t i){
         //random_walk(nodes, seed[i], start[i], length);
 		/*	Unroll and rewrite random_walk() */
 		uint32_t rng=seed[i];
