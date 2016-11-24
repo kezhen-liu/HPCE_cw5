@@ -18,7 +18,7 @@ public:
 		       ) const override {
 				   //memory intensive, going to use tbb
 	// Take a copy, as we'll need to modify the "count" flags
-      std::vector<dd_node_t> nodes(pInput->nodes);
+      std::vector<puzzler::dd_node_t> nodes(pInput->nodes);
       
       log->Log(Log_Debug, [&](std::ostream &dst){
         dst<<"  Scale = "<<nodes.size()<<"\n";
