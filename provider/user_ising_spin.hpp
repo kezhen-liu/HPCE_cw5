@@ -8,7 +8,7 @@ class IsingSpinProvider
 {
 private:
   void mInit(
-      const IsingSpinInput *pInput,
+      const puzzler::IsingSpinInput *pInput,
       uint32_t &seed,
       int *out
     ) const {
@@ -24,9 +24,9 @@ private:
 	
 	void mDump(
       int logLevel,
-      const IsingSpinInput *pInput,
+      const puzzler::IsingSpinInput *pInput,
       int *in,
-      ILog *log
+      puzzler::ILog *log
     ) const {
       if(logLevel > log->Level())
         return;
@@ -45,7 +45,7 @@ private:
     }
 	
 	void mStep(
-      const IsingSpinInput *pInput,
+      const puzzler::IsingSpinInput *pInput,
       uint32_t &seed,
       const int *in,
       int *out
@@ -111,7 +111,7 @@ private:
     };
 	
 	int mCount(
-      const IsingSpinInput *pInput,
+      const puzzler::IsingSpinInput *pInput,
       const int *in
     ) const {
       unsigned n=pInput->n;
