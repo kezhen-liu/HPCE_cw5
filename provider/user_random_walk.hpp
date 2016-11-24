@@ -19,7 +19,7 @@ public:
 				   //memory intensive, going to use tbb
 	// Take a copy, as we'll need to modify the "count" flags
       std::vector<puzzler::dd_node_t> nodes(input->nodes);
-      
+      /*
       log->Log(Log_Debug, [&](std::ostream &dst){
         dst<<"  Scale = "<<nodes.size()<<"\n";
         for(unsigned i=0;i<nodes.size();i++){
@@ -34,7 +34,7 @@ public:
       });
 
       log->LogVerbose("Starting random walks");
-
+		*/
 	  /************************************** Random Walk Implementation Starts	*************************/
 	  std::vector<tbb::atomic<uint32_t> > nodeCount(nodes.size(), 0);
 	  
@@ -63,7 +63,7 @@ public:
 	  }
 
 	  /************************************** Random Walk Implementation Ends	*************************/
-      log->LogVerbose("Done random walks, converting histogram");
+      //log->LogVerbose("Done random walks, converting histogram");
 
       // Map the counts from the nodes back into an array
       output->histogram.resize(nodes.size());
@@ -74,7 +74,7 @@ public:
       // Order them by how often they were visited
       std::sort(output->histogram.rbegin(), output->histogram.rend());
       
-
+	/*
       // Debug only. No cost in normal execution
       log->Log(Log_Debug, [&](std::ostream &dst){
         for(unsigned i=0; i<output->histogram.size(); i++){
@@ -82,7 +82,7 @@ public:
         }
       });
 
-      log->LogVerbose("Finished");
+      log->LogVerbose("Finished"); */
   }
 
 };
