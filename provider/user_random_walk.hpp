@@ -44,8 +44,8 @@ public:
 	  unsigned length=input->lengthWalks;           // All paths the same length
 	  
       for(unsigned i=0; i<input->numSamples; i++){
-        unsigned seed[i]=rng();
-        unsigned start[i]=rng() % nodes.size();    // Choose a random node
+        seed[i]=rng();
+        start[i]=rng() % nodes.size();    // Choose a random node
       }
 	  tbb::parallel_for(0ul,input->numSamples,[&](size_t i){
         //random_walk(nodes, seed[i], start[i], length);
