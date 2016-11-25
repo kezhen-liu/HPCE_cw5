@@ -71,7 +71,7 @@ public:
       //for(unsigned i=0; i<nodes.size(); i++){
 	  //tbb::parallel_for(0u,(unsigned)nodes.size(),[&](unsigned i){
       unsigned nodesSize = nodes.size();
-	  if(nodesSize < 30000){
+	  if(nodesSize > 30000){
 	  tbb::parallel_for(tbb::blocked_range<unsigned>(0u,nodesSize,4096), [&](const tbb::blocked_range<unsigned> &chunk){
 		for(unsigned i=chunk.begin(); i!=chunk.end(); i++){
         output->histogram[i]=std::make_pair(uint32_t(nodeCount[i]),uint32_t(i));
