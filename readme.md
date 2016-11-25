@@ -56,11 +56,13 @@ We all know the price to pay for a GPU speedup is the time spent on initial set 
 
 ### Float number issues...
 I didn't make much progress on this to be honest, although through reading opencl's reference, I found using hypot(z_x, z_y) function seems to have a better result comparing with using direct formulars.
+
+## 4. Previous readme.md
+----------------------------
+
 - Issued: Fri 11th Nov
 - Due: Fri 25th Nov, 22:00
 
-Previous readme.md
-----------------------------
 Specification
 -------------
 
