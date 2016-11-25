@@ -34,11 +34,74 @@ private:
 			std::istreambuf_iterator<char>()
 		);
 	}
+	std::vector<cl::Device> devices;
 	cl::Device device;		//order of declaration matters in the following lambda in initializer!!!
 	cl::Context context;
+	cl::Program::Sources sources; 
+	cl::Program program;
 	cl::Kernel kernel;
 public:
-	JuliaProvider() : device() ,context(), kernel([&](){
+	JuliaProvider() : devices(), device() ,context([&](){
+				// Platform
+			std::vector<cl::Platform> platforms;
+
+			cl::Platform::get(&platforms);
+			if(platforms.size()==0)
+				throw std::runtime_error("No OpenCL platforms found.");
+
+			
+			std::cerr<<"Found "<<platforms.size()<<" platforms\n";
+			for(unsigned i=0;i<platforms.size();i++){
+				std::string vendor=platforms[i].getInfo<CL_PLATFORM_VENDOR>();
+				std::cerr<<"  Platform "<<i<<" : "<<vendor<<"\n";
+			}
+			
+			
+			int selectedPlatform=0;
+			if(getenv("HPCE_SELECT_PLATFORM")){
+				selectedPlatform=atoi(getenv("HPCE_SELECT_PLATFORM"));
+			}
+			std::cerr<<"Choosing platform "<<selectedPlatform<<"\n";
+			cl::Platform platform=platforms.at(selectedPlatform); 
+			
+			// Device
+			//std::vector<cl::Device> devices;
+			platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);  
+			if(devices.size()==0){
+				throw std::runtime_error("No opencl devices found.\n");
+			}
+			
+			std::cerr<<"Found "<<devices.size()<<" devices\n";
+			for(unsigned i=0;i<devices.size();i++){
+				std::string name=devices[i].getInfo<CL_DEVICE_NAME>();
+				std::cerr<<"  Device "<<i<<" : "<<name<<"\n";
+			}
+			
+			int selectedDevice=0;
+			if(getenv("HPCE_SELECT_DEVICE")){
+				selectedDevice=atoi(getenv("HPCE_SELECT_DEVICE"));
+			}
+			std::cerr<<"Choosing device "<<selectedDevice<<"\n";
+			this->device=devices.at(selectedDevice);
+			
+			std::cerr<<"@b4 return devices"<<"\n";
+			return devices;
+			// Context
+			//cl::Context context(devices);
+			}()), 
+		sources(),
+		program(context, [&](){
+			std::string kernelSource=LoadSource("kernel_julia.cl");
+
+			//cl::Program::Sources sources;   // A vector of (data,length) pairs
+			sources.push_back(std::make_pair(kernelSource.c_str(), kernelSource.size()+1)); // push on our single string
+
+			//cl::Program program(this->context, sources);
+			std::cerr<<"@program lambda "<<"\n";
+			return sources;
+		}()),
+		kernel([&](){
+			/*
 			// Platform
 			std::vector<cl::Platform> platforms;
 
@@ -84,6 +147,7 @@ public:
 			// Context
 			//cl::Context context(devices);
 			
+			
 			// Collect sources into program
 			std::string kernelSource=LoadSource("kernel_julia.cl");
 
@@ -91,9 +155,11 @@ public:
 			sources.push_back(std::make_pair(kernelSource.c_str(), kernelSource.size()+1)); // push on our single string
 
 			cl::Program program(this->context, sources);
+			*/
 			try{
 				program.build(devices);
 			}catch(...){
+				std::cerr<<"Error throwed at 0"<<"\n\n";
 				for(unsigned i=0;i<devices.size();i++){
 					std::cerr<<"Log for device "<<devices[i].getInfo<CL_DEVICE_NAME>()<<":\n\n";
 					std::cerr<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[i])<<"\n\n";
@@ -135,9 +201,10 @@ public:
 		cl::Kernel mKernel(kernel);		//make a copy, since the function is const
 		mKernel.setArg(0, dx);
 		mKernel.setArg(1, dy);
-		mKernel.setArg(2, input->c.real());
-		mKernel.setArg(3, input->c.imag());
-		mKernel.setArg(4, buffDest);
+		mKernel.setArg(2, input->maxIter);
+		mKernel.setArg(3, input->c.real());
+		mKernel.setArg(4, input->c.imag());
+		mKernel.setArg(5, buffDest);
 		
 		cl::CommandQueue queue(context, device);
 		

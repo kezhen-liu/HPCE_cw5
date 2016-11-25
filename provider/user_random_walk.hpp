@@ -16,6 +16,7 @@ public:
 		       const puzzler::RandomWalkInput *input,
 		       puzzler::RandomWalkOutput *output
 		       ) const override {
+    
 				   //memory intensive, going to use tbb
 	// Take a copy, as we'll need to modify the "count" flags
       std::vector<puzzler::dd_node_t> nodes(input->nodes);

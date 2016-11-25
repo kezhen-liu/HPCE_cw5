@@ -4,6 +4,9 @@ CPPFLAGS += -std=c++11 -W -Wall  -g
 CPPFLAGS += -O3
 CPPFLAGS += -I ../include
 
+# Force IEEE. As suggested in issue.
+CPPFLAGS += -msse2 -ffloat-store
+
 puzzles.o : $(wildcard *.hpp) $(wildcard ../include/puzzler/*.hpp ../include/puzzler/*/*.hpp)
 
 ../lib/libpuzzler.a : puzzles.o

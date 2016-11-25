@@ -1,4 +1,4 @@
-__kernel void kernel_xy(const float dx, const float dy, const unsigned maxIter, const float c_x, const float c_y, __global unsigned* dest){
+__kernel void kernel_julia(const float dx, const float dy, const unsigned maxIter, const float c_x, const float c_y, __global unsigned* dest){
 	
 	uint x=get_global_id(0);
     uint y=get_global_id(1);
@@ -6,7 +6,7 @@ __kernel void kernel_xy(const float dx, const float dy, const unsigned maxIter, 
 	
 	// Map pixel to z_0
 	// complex_t z(-1.5f+x*dx, -1.5f+y*dy);
-	float z_x = -1.5f+x*dx, z_y = -1.5f+y*dy
+	float z_x = -1.5f+x*dx, z_y = -1.5f+y*dy;
 
 	//Perform a julia iteration starting at the point z_0, for offset c.
 	//   z_{i+1} = z_{i}^2 + c
@@ -14,8 +14,8 @@ __kernel void kernel_xy(const float dx, const float dy, const unsigned maxIter, 
 
 	unsigned iter=0;
 	while(iter<maxIter){
-		//if(abs(z) > 2){
-		if(hypot(z_x, z_y) > 2)
+		//if(abs(z) > 2)
+		if(hypot(z_x, z_y) > 2){
 			break;
 		}
 		// Anybody want to refine/tighten this?

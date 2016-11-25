@@ -2,6 +2,7 @@
 #define user_ising_spin_hpp
 
 #include "puzzler/puzzles/ising_spin.hpp"
+#include "tbb/parallel_for.h"
 
 class IsingSpinProvider
   : public puzzler::IsingSpinPuzzle
@@ -54,7 +55,37 @@ private:
       
       //for(unsigned x=0; x<n; x++){
         //for(unsigned y=0; y<n; y++){
-	  for(unsigned k=0; k<n; k++){	//upper half
+	  std::vector<uint32_t> seeds(n*n,0);
+	  //seeds[0]=seed;
+	  for(unsigned x=0; x<n; x++){
+        for(unsigned y=0; y<n; y++){
+			seeds[x*n+y]=seed;
+			seed = mLcg(seed);
+		}
+	  }
+	  /*
+	  for(unsigned x=0; x<n; x++){
+        for(unsigned y=0; y<n; y++){
+			int W = x==0 ?    in[y*n+n-1]   : in[y*n+x-1];
+          int E = x==n-1 ?  in[y*n+0]     : in[y*n+x+1];
+          int N = y==0 ?    in[(n-1)*n+x] : in[(y-1)*n+x];
+          int S = y==n-1 ?  in[0*n+x]     : in[(y+1)*n+x];
+          int nhood=W+E+N+S;
+          
+          int C = in[y*n+x];
+          
+          unsigned index=(nhood+4)/2 + 5*(C+1)/2;
+          float prob=pInput->probs[index];
+
+          if( seeds[x*n+y] < prob){
+            C *= -1; // Flip
+          }
+          
+          out[y*n+x]=C;
+		}
+	  }*/
+	  
+	  tbb::parallel_for(0u, n, [&](unsigned k){	//upper half
 		for(unsigned j=0; j<=k; j++){
 		  unsigned x =j, y=k-j;
           int W = x==0 ?    in[y*n+n-1]   : in[y*n+x-1];
@@ -68,16 +99,16 @@ private:
           unsigned index=(nhood+4)/2 + 5*(C+1)/2;
           float prob=pInput->probs[index];
 
-          if( seed < prob){
+          if( seeds[x*n+y] < prob){
             C *= -1; // Flip
           }
           
           out[y*n+x]=C;
           
-          seed = mLcg(seed);
+          //seed = mLcg(seed);
         }
-      }
-	  for(unsigned k=n; k<2*n-1; k++){
+      });
+	  tbb::parallel_for(n, (unsigned)(2*n-1),[&](unsigned k){
 		  for(unsigned j=0; j<=2*n-2-k; j++){
 			unsigned x=-n+1+k+j, y=n-1-j;
             int W = x==0 ?    in[y*n+n-1]   : in[y*n+x-1];
@@ -91,15 +122,15 @@ private:
             unsigned index=(nhood+4)/2 + 5*(C+1)/2;
             float prob=pInput->probs[index];
 
-            if( seed < prob){
+            if( seeds[x*n+y] < prob){
               C *= -1; // Flip
             }
           
             out[y*n+x]=C;
           
-            seed = mLcg(seed);  
+            //seed = mLcg(seed);  
 		  }
-	  }
+	  });
     }
 	
 	// This has some interesting and maybe useful properties...
@@ -152,7 +183,7 @@ public:
           //log->LogDebug("    Step %u", t);
           
           // Dump the state of spins on high log levels
-          mDump(puzzler::Log_Debug, input, &current[0], log);
+          //mDump(puzzler::Log_Debug, input, &current[0], log);
           
           mStep(input, seed, &current[0], &next[0]);
           std::swap(current, next);
@@ -166,17 +197,17 @@ public:
         seed=mLcg(seed);
       }
       
-      log->LogInfo("Calculating final statistics");
+      //log->LogInfo("Calculating final statistics");
       
       output->means.resize(input->maxTime);
       output->stddevs.resize(input->maxTime);
       for(unsigned i=0; i<input->maxTime; i++){
         output->means[i] = sums[i] / input->maxTime;
         output->stddevs[i] = sqrt( sumSquares[i]/input->maxTime - output->means[i]*output->means[i] );
-        log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, output->means[i], output->stddevs[i]);
+        //log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, output->means[i], output->stddevs[i]);
       }
       
-      log->LogInfo("Finished");
+      //log->LogInfo("Finished");
   }
 
 };
