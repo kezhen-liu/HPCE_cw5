@@ -53,7 +53,7 @@ public:
 		/*	Unroll and rewrite random_walk() */
 		uint32_t rng=seed[i];
         unsigned current=start[i];
-        for(unsigned i=0; i<length; i++){
+        for(unsigned k=0; k<length; k++){
           nodeCount[current]++;
 
           unsigned edgeIndex = rng % nodes[current].edges.size();
