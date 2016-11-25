@@ -68,10 +68,11 @@ public:
 
       // Map the counts from the nodes back into an array
       output->histogram.resize(nodes.size());
-      for(unsigned i=0; i<nodes.size(); i++){
+      //for(unsigned i=0; i<nodes.size(); i++){
+	  tbb::parallel_for(0u,(unsigned)nodes.size(),[&](unsigned i){
         output->histogram[i]=std::make_pair(uint32_t(nodeCount[i]),uint32_t(i));
         //nodes[i].count=0;
-      }
+      });
       // Order them by how often they were visited
       std::sort(output->histogram.rbegin(), output->histogram.rend());
       
