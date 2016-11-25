@@ -130,35 +130,35 @@ public:
 		       ) const override {
     //return ReferenceExecute(log, input, output);
 	//memory racing, thus no gpu resolution, complex 4-way dependencies, thus re coordinated
-	  int n=pInput->n;
+	  int n=input->n;
       
       std::vector<int> current(n*n), next(n*n);
       
-      std::vector<double> sums(pInput->maxTime, 0.0);
-      std::vector<double> sumSquares(pInput->maxTime, 0.0);
+      std::vector<double> sums(input->maxTime, 0.0);
+      std::vector<double> sumSquares(input->maxTime, 0.0);
       
-      log->LogInfo("Starting steps.");
+      //log->LogInfo("Starting steps.");
       
-      std::mt19937 rng(pInput->seed); // Gives the same sequence on all platforms
+      std::mt19937 rng(input->seed); // Gives the same sequence on all platforms
       uint32_t seed;
-      for(unsigned i=0; i<pInput->repeats; i++){
+      for(unsigned i=0; i<input->repeats; i++){
         seed=rng();
         
-        log->LogVerbose("  Repeat %u", i);
+        //log->LogVerbose("  Repeat %u", i);
         
-        mInit(pInput, seed, &current[0]);
+        mInit(input, seed, &current[0]);
         
-        for(unsigned t=0; t<pInput->maxTime; t++){
-          log->LogDebug("    Step %u", t);
+        for(unsigned t=0; t<input->maxTime; t++){
+          //log->LogDebug("    Step %u", t);
           
           // Dump the state of spins on high log levels
-          mDump(Log_Debug, pInput, &current[0], log);
+          mDump(puzzler::Log_Debug, input, &current[0], log);
           
-          mStep(pInput, seed, &current[0], &next[0]);
+          mStep(input, seed, &current[0], &next[0]);
           std::swap(current, next);
           
           // Track the statistics
-          double countPositive=mCount(pInput, &current[0]);
+          double countPositive=mCount(input, &current[0]);
           sums[t] += countPositive;
           sumSquares[t] += countPositive*countPositive;
         }
