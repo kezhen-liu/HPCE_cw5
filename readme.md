@@ -45,7 +45,7 @@ Memory racing. As I said there are dependencies on surronding Ising sites.
 - parrallel on mean and standard deviations? Yes, though very small speed up through testing. Here I estimated there are around 30 intructions per interation when calculating mean and stddev, thus chosed a grain size of 512, which turned out to be quite good.
 
 
-## Julia
+## 3. Julia
 I'm less confident on Julia to be honest but would like to try for a opencl implementation
 
 ### Computational expensive part
@@ -59,7 +59,8 @@ I didn't make much progress on this to be honest, although through reading openc
 - Issued: Fri 11th Nov
 - Due: Fri 25th Nov, 22:00
 
-
+Previous readme.md
+----------------------------
 Specification
 -------------
 
