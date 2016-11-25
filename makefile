@@ -2,7 +2,8 @@ SHELL=/bin/bash
 
 CPPFLAGS += -std=c++11 -W -Wall  -g
 CPPFLAGS += -O3
-CPPFLAGS += -I include
+CPPFLAGS += -I include -I include/CL
+CPPFLAGS += -lOpenCL
 
 ifeq ($(OS),Windows_NT)
 LDLIBS += -lws2_32
