@@ -69,10 +69,13 @@ public:
       // Map the counts from the nodes back into an array
       output->histogram.resize(nodes.size());
       //for(unsigned i=0; i<nodes.size(); i++){
-	  tbb::parallel_for(0u,(unsigned)nodes.size(),[&](unsigned i){
+	  //tbb::parallel_for(0u,(unsigned)nodes.size(),[&](unsigned i){
+	  tbb::parallel_for(tbb::blocked_range<unsigned>(0u,(unsigned)nodes.size(),512), [&](const tbb::blocked_range<unsigned> &chunk){
+		for(unsigned i=chunk.begin(); i!=chunk.end(); i++){
         output->histogram[i]=std::make_pair(uint32_t(nodeCount[i]),uint32_t(i));
         //nodes[i].count=0;
-      });
+		}
+      },tbb::simple_partitioner());
       // Order them by how often they were visited
       std::sort(output->histogram.rbegin(), output->histogram.rend());
       
