@@ -44,10 +44,13 @@ public:
 	  unsigned seed[input->numSamples], start[input->numSamples];
 	  unsigned length=input->lengthWalks;           // All paths the same length
 	  
-      for(unsigned i=0; i<input->numSamples; i++){
+      //for(unsigned i=0; i<input->numSamples; i++){
+	  tbb::parallel_for(tbb::blocked_range<unsigned>(0u,(unsigned) input->numSamples,256), [&](const tbb::blocked_range<unsigned> &chunk){
+		for(unsigned i=chunk.begin(); i!=chunk.end(); i++){
         seed[i]=rng();
         start[i]=rng() % nodes.size();    // Choose a random node
-      }
+        }
+	  },tbb::simple_partitioner());
 	  tbb::parallel_for(0u,(unsigned)input->numSamples,[&](unsigned i){
         //random_walk(nodes, seed[i], start[i], length);
 		/*	Unroll and rewrite random_walk() */
