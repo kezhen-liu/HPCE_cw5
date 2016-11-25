@@ -202,11 +202,14 @@ public:
       output->means.resize(input->maxTime);
       output->stddevs.resize(input->maxTime);
       //for(unsigned i=0; i<input->maxTime; i++){
-	  tbb::parallel_for(0u, (unsigned)input->maxTime,[&](unsigned i){
+	  //tbb::parallel_for(0u, (unsigned)input->maxTime,[&](unsigned i){
+	  tbb::parallel_for(tbb::blocked_range<unsigned>(0u,(unsigned)input->maxTime,512), [&](const tbb::blocked_range<unsigned> &chunk){
+		for(unsigned i=chunk.begin(); i!=chunk.end(); i++){
         output->means[i] = sums[i] / input->maxTime;
         output->stddevs[i] = sqrt( sumSquares[i]/input->maxTime - output->means[i]*output->means[i] );
         //log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, output->means[i], output->stddevs[i]);
-      });
+		}
+      },tbb::simple_partitioner());
       
       //log->LogInfo("Finished");
   }
