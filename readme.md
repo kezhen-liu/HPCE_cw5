@@ -1,6 +1,61 @@
-HPCE 2016 CW5
-=============
+# HPCE 2016 CW5
 
+This documents describes the work partitions, Testing and verification methodologies  and detailed measured to optimize/speed up those puzzles provided.
+
+## 0. Work partitions and plan etc.
+--------------
+As I'm the singleton in this year's HPCE class, all the work including analyzing, coding, testing and verification are done by myself. However due to time constrains, I only mannage to finish three out of four puzzles' optimization, which are, random_walk, Ising_spin and Julia. 
+
+## 1. Random_walk
+----------
+### Computational expensive part analysis
+In random Walk puzzle, the part where we calculate number of counts on each nodes is the most computational intensive part
+### GPU or CPU?
+Here I decided to go for parallel-for on CPU. The reasons are
+- Its algorithm involves a lot of memory reads and write on non-primitive structures, i.e. nodes, costing a lot of time to copy memory between cpu and gpu
+- There are memory racing on nodes.count
+- There are some dependency on random number chain, more hassle if we unroll it in cpu and copy over to gpu
+
+### Solve the problems
+Now we chose to use parrallel-for implementation. To solve the above problems, I did the following
+- Unroll nodes structure. We now have a independent vector of atomic unsigned to hold the counts on each node
+- To parrallel over numSamples, we unrolled the random number generator (chain) by a sequential for before parrallel for
+
+### Testing and modifying
+- Considering using grain-size parrallel rather than auto-partitioned for the parrallel loop over numSamples. However later I found that it is really difficult to find a optimal grain size. The reason is, the work load in each iteration is NOT fixed but depending on Input.scale. As a result I switched back to auto partitioner
+- Apart from the parralel for over numSamples, there is actually another nested for loop inside. I tested using a parrallel-over-both and found that it actually took longer to execute. As a result I removed the inner parrallel
+- The for loop at the very beginning used to unroll random number generator CANNOT be parralleled, or breaking its sequence/order
+- I added another parrallel for at where histogram is constructed. Since the instruction executed in each iteration is relatively small, I found a grain size of 4096 is one of the optimal solutions
+
+
+## 2. Ising spin model
+### Computational expensive part analysis
+There are actually three nested for loops in the code, where they loop over repeats, maxTime and the entire Ising Model space respectively. 
+
+### Can those loops be paralleled?
+Starting from the inner most loop, which is the loop over Ising model, though each Ising site depends on its four surronding neighbors, and to match with reference solution restricts the order where each site can be iterated, we can still re-order the loop, by mapping the entire iteration space to a different coordinates, (from x, y to a skewed j k coordinates), without breaking the execution sequence specified by the reference function.
+The loop over maxTime cannot be parralleld, as far as I can see. The reason is the input of the next step is always depending on the results of previous step (Sounds quite farmiliar with one of our previous coursework which uses opencl? However we don't use opencl here, the reason will be mentioned in the following sections), making it impossible to parrallel
+I just realized that the out-most loop can be parralleled at the last minute, by unrolling rng() like the ransom walk puzzle we mentioned above, but don't have time to implement it.
+
+### Why not GPU?
+Memory racing. As I said there are dependencies on surronding Ising sites.
+
+### Testing and mods
+- grain size on Ising space parrallel? No, through testing there is not much speed up by introducing grain size, probably because after mapping to a new coordinates, the number of elements on each row varies.
+- parrallel on mean and standard deviations? Yes, though very small speed up through testing. Here I estimated there are around 30 intructions per interation when calculating mean and stddev, thus chosed a grain size of 512, which turned out to be quite good.
+
+
+## Julia
+I'm less confident on Julia to be honest but would like to try for a opencl implementation
+
+### Computational expensive part
+Clearly it is the julia iteration part. No memory racing, uniform memory reads and only need one result copy from GPU to CPU, making it very suitable for a GPU implementaion.
+
+### The overhead cost
+We all know the price to pay for a GPU speedup is the time spent on initial set up. In order to reduce this amount of time, I moved most of its GPU setup part of code to JuliaProvider constructors rather than residing in execute function. Some of the varables/objects kernel program needs are passed by JuliaProvider class' members I added. I'm not that farmiliar with c++ and this parts took me alot of time.
+
+### Float number issues...
+I didn't make much progress on this to be honest, although through reading opencl's reference, I found using hypot(z_x, z_y) function seems to have a better result comparing with using direct formulars.
 - Issued: Fri 11th Nov
 - Due: Fri 25th Nov, 22:00
 
