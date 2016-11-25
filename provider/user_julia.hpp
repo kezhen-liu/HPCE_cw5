@@ -50,18 +50,18 @@ public:
 				throw std::runtime_error("No OpenCL platforms found.");
 
 			
-			std::cerr<<"Found "<<platforms.size()<<" platforms\n";
+			/*std::cerr<<"Found "<<platforms.size()<<" platforms\n";
 			for(unsigned i=0;i<platforms.size();i++){
 				std::string vendor=platforms[i].getInfo<CL_PLATFORM_VENDOR>();
 				std::cerr<<"  Platform "<<i<<" : "<<vendor<<"\n";
 			}
-			
+			*/
 			
 			int selectedPlatform=0;
 			if(getenv("HPCE_SELECT_PLATFORM")){
 				selectedPlatform=atoi(getenv("HPCE_SELECT_PLATFORM"));
 			}
-			std::cerr<<"Choosing platform "<<selectedPlatform<<"\n";
+			//std::cerr<<"Choosing platform "<<selectedPlatform<<"\n";
 			cl::Platform platform=platforms.at(selectedPlatform); 
 			
 			// Device
@@ -70,21 +70,20 @@ public:
 			if(devices.size()==0){
 				throw std::runtime_error("No opencl devices found.\n");
 			}
-			
+			/*
 			std::cerr<<"Found "<<devices.size()<<" devices\n";
 			for(unsigned i=0;i<devices.size();i++){
 				std::string name=devices[i].getInfo<CL_DEVICE_NAME>();
 				std::cerr<<"  Device "<<i<<" : "<<name<<"\n";
-			}
+			}*/
 			
 			int selectedDevice=0;
 			if(getenv("HPCE_SELECT_DEVICE")){
 				selectedDevice=atoi(getenv("HPCE_SELECT_DEVICE"));
 			}
-			std::cerr<<"Choosing device "<<selectedDevice<<"\n";
+			//std::cerr<<"Choosing device "<<selectedDevice<<"\n";
 			this->device=devices.at(selectedDevice);
 			
-			std::cerr<<"@b4 return devices"<<"\n";
 			return devices;
 			// Context
 			//cl::Context context(devices);
@@ -97,7 +96,6 @@ public:
 			sources.push_back(std::make_pair(kernelSource.c_str(), kernelSource.size()+1)); // push on our single string
 
 			//cl::Program program(this->context, sources);
-			std::cerr<<"@program lambda "<<"\n";
 			return sources;
 		}()),
 		kernel([&](){
