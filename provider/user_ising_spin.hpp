@@ -201,11 +201,12 @@ public:
       
       output->means.resize(input->maxTime);
       output->stddevs.resize(input->maxTime);
-      for(unsigned i=0; i<input->maxTime; i++){
+      //for(unsigned i=0; i<input->maxTime; i++){
+	  tbb::parallel_for(0u, (unsigned)input->maxTime,[&](unsigned i){
         output->means[i] = sums[i] / input->maxTime;
         output->stddevs[i] = sqrt( sumSquares[i]/input->maxTime - output->means[i]*output->means[i] );
         //log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, output->means[i], output->stddevs[i]);
-      }
+      });
       
       //log->LogInfo("Finished");
   }
