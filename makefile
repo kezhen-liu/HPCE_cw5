@@ -5,6 +5,8 @@ CPPFLAGS += -O3
 CPPFLAGS += -I include -I include/CL
 CPPFLAGS += -lOpenCL
 
+LDLIBS += -ltbb
+
 ifeq ($(OS),Windows_NT)
 LDLIBS += -lws2_32
 else
