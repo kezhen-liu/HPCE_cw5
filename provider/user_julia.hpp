@@ -79,7 +79,7 @@ public:
 				selectedDevice=atoi(getenv("HPCE_SELECT_DEVICE"));
 			}
 			std::cerr<<"Choosing device "<<selectedDevice<<"\n";
-			this.device=devices.at(selectedDevice);
+			this->device=devices.at(selectedDevice);
 			
 			// Context
 			//cl::Context context(devices);
@@ -90,7 +90,7 @@ public:
 			cl::Program::Sources sources;   // A vector of (data,length) pairs
 			sources.push_back(std::make_pair(kernelSource.c_str(), kernelSource.size()+1)); // push on our single string
 
-			cl::Program program(this.context, sources);
+			cl::Program program(this->context, sources);
 			try{
 				program.build(devices);
 			}catch(...){
@@ -123,7 +123,7 @@ public:
 		
 		float dx=3.0f/input->width, dy=3.0f/input->height;
 		
-		cl::Buffer buffDest(this.context, CL_MEM_WRITE_ONLY, destSize);
+		cl::Buffer buffDest(context, CL_MEM_WRITE_ONLY, destSize);
 		/*
 		__kernel void kernel_xy(const float dx,	//0 
 				const float dy, 	//1
@@ -132,23 +132,23 @@ public:
 				const float c_y, //4
 				__global unsigned* dest){	//5
 		*/
+		cl::Kernel mKernel(kernel);		//make a copy, since the function is const
+		mKernel.setArg(0, dx);
+		mKernel.setArg(1, dy);
+		mKernel.setArg(2, input->c.real());
+		mKernel.setArg(3, input->c.imag());
+		mKernel.setArg(4, buffDest);
 		
-		kernel.setArg(0, dx);
-		kernel.setArg(1, dy);
-		kernel.setArg(2, input->c.real());
-		kernel.setArg(3, input->c.imag());
-		kernel.setArg(4, buffDest);
+		cl::CommandQueue queue(context, device);
 		
-		cl::CommandQueue queue(this.context, this.device);
-		
-		std::cerr<<"REPEAT: Choosing device "<< this.device.getInfo<CL_DEVICE_NAME>()<<"\n";
+		std::cerr<<"REPEAT: Choosing device "<< device.getInfo<CL_DEVICE_NAME>()<<"\n";
 
 		cl::NDRange offset(0, 0);               // Always start iterations at x=0, y=0
 		cl::NDRange globalSize(input->width, input->height);   // Global size must match the original loops
 		cl::NDRange localSize=cl::NullRange; // We don't care about local size
 
 		for(unsigned t=0;t<destSize;t++){
-			queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);	
+			queue.enqueueNDRangeKernel(mKernel, offset, globalSize, localSize);	
 		}
 		queue.enqueueBarrier();
 		queue.enqueueReadBuffer(buffDest, CL_TRUE, 0, destSize, &dest[0]);

@@ -168,12 +168,12 @@ public:
       
       log->LogInfo("Calculating final statistics");
       
-      pOutput->means.resize(pInput->maxTime);
-      pOutput->stddevs.resize(pInput->maxTime);
-      for(unsigned i=0; i<pInput->maxTime; i++){
-        pOutput->means[i] = sums[i] / pInput->maxTime;
-        pOutput->stddevs[i] = sqrt( sumSquares[i]/pInput->maxTime - pOutput->means[i]*pOutput->means[i] );
-        log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, pOutput->means[i], pOutput->stddevs[i]);
+      output->means.resize(input->maxTime);
+      output->stddevs.resize(input->maxTime);
+      for(unsigned i=0; i<input->maxTime; i++){
+        output->means[i] = sums[i] / input->maxTime;
+        output->stddevs[i] = sqrt( sumSquares[i]/input->maxTime - output->means[i]*output->means[i] );
+        log->LogVerbose("  time %u : mean=%8.6f, stddev=%8.4f", i, output->means[i], output->stddevs[i]);
       }
       
       log->LogInfo("Finished");
